@@ -1,13 +1,19 @@
 const regexNumber = /(?:\d+,)*\d+(?:\.\d+)?/gi;
 const regexFraction = /(?:\d\/\d)/gi;
-const regexPound = new RegExp(
-    '(?:(?:' +
-        regexNumber.source +
-        ')|' +
-        regexFraction.source +
-        ')(\\s|-)?(lb|pound)s?',
-    'gi'
-);
+const imperialUnits = [
+    {
+        convertFrom: 'pound',
+        convertTo: 'kg',
+        conversionRatio: 0.45359237,
+        regex: /(pound|lb)s?/gi,
+    },
+    {
+        convertFrom: 'mile',
+        convertTo: 'km',
+        conversionRatio: 1.609344,
+        regex: /(miles?|mi)/gi,
+    },
+];
 
 function findTextNodes(node) {
     const nodeType = node.nodeType;
@@ -35,17 +41,36 @@ function otherNode(nodeType) {
 
 function handleTextNode(node) {
     let deltaOffset = 0;
-    node.nodeValue.replace(regexPound, function (match, p1, p2, offset) {
-        let number = convertUnit(match);
-        let newNode = node.splitText(offset + deltaOffset);
-        deltaOffset -= node.nodeValue.length + match.length;
-        newNode.nodeValue = newNode.nodeValue.substr(match.length);
-        node.parentNode.insertBefore(createSpanElement(number, match), newNode);
-        node = newNode;
+    imperialUnits.forEach((unit) => {
+        let regex = new RegExp(
+            '(?:(?:' +
+                regexNumber.source +
+                ')|' +
+                regexFraction.source +
+                ')(\\s|-)?' +
+                unit.regex.source,
+            'gi'
+        );
+
+        node.nodeValue.replace(regex, function (match, p1, p2, offset) {
+            let number = convertUnit(
+                match,
+                unit.conversionRatio,
+                unit.convertTo
+            );
+            let newNode = node.splitText(offset + deltaOffset);
+            deltaOffset -= node.nodeValue.length + match.length;
+            newNode.nodeValue = newNode.nodeValue.substr(match.length);
+            node.parentNode.insertBefore(
+                createSpanElement(match, number),
+                newNode
+            );
+            node = newNode;
+        });
     });
 }
 
-function convertUnit(unitString) {
+function convertUnit(unitString, conversionRatio, convertTo) {
     let number;
     if (regexFraction.test(unitString)) {
         let fraction = unitString.match(regexFraction)[0].split('/');
@@ -53,14 +78,14 @@ function convertUnit(unitString) {
     } else if (regexNumber.test(unitString)) {
         number = parseFloat(unitString.match(regexNumber)[0].replace(',', ''));
     }
-    number /= 2.20462;
+    number *= conversionRatio;
     number = number.toFixed(2);
-    return number.toString();
+    return `${number.toString()} ${convertTo}`;
 }
 
-function createSpanElement(internationalUnit, imperialUnit) {
+function createSpanElement(imperialUnit, internationalUnit) {
     let span = document.createElement('span');
-    span.title = `${internationalUnit} kg`;
+    span.title = internationalUnit;
     span.className = 'unitConverter';
     span.textContent = imperialUnit;
     return span;
