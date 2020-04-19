@@ -48,7 +48,8 @@ function handleTextNode(node) {
                 ')|' +
                 regexFraction.source +
                 ')(\\s|-)?' +
-                unit.regex.source,
+                unit.regex.source +
+                '\\b',
             'gi'
         );
 
