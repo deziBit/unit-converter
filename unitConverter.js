@@ -1,25 +1,34 @@
-const regexNumber = /(?:\d+,)*\d+(?:\.\d+)?/gi;
-const regexFraction = /(?:\d\/\d)/gi;
+const regexNumber = /(?:\d+,)*\d+(?:\.\d+)?/i;
+const regexFraction = /(?:\d\/\d)/i;
 const imperialUnits = [
     {
         convertFrom: 'pound',
         convertTo: 'kg',
         conversionRatio: 0.45359237,
-        regex: /(pound|lb)s?/gi,
+        regex: /(?:(pound|lb)s?)/i,
     },
     {
         convertFrom: 'mile',
         convertTo: 'km',
         conversionRatio: 1.609344,
-        regex: /(miles?|mi)/gi,
+        regex: /(?:miles?|mi)/i,
     },
     {
         convertFrom: 'foot',
         convertTo: 'm',
         conversionRatio: 0.3048,
-        regex: /(?:foot|feet|ft)/gi,
+        regex: /(?:foot|feet|ft)/i,
     },
 ];
+
+let regexImperialUnits = imperialUnits[0].regex.source;
+for (let i = 1; i < imperialUnits.length; i++) {
+    regexImperialUnits += `| ${imperialUnits[i].regex.source}`;
+}
+const regex = new RegExp(
+    `(?:${regexNumber.source}|${regexFraction.source})(\\s|-)?(?:${regexImperialUnits})\\b`,
+    'gi'
+);
 
 function findTextNodes(node) {
     const nodeType = node.nodeType;
@@ -47,44 +56,36 @@ function otherNode(nodeType) {
 
 function handleTextNode(node) {
     let deltaOffset = 0;
-    imperialUnits.forEach((unit) => {
-        let regex = new RegExp(
-            '(?:(?:' +
-                regexNumber.source +
-                ')|' +
-                regexFraction.source +
-                ')(\\s|-)?' +
-                unit.regex.source +
-                '\\b',
-            'gi'
-        );
 
-        node.nodeValue.replace(regex, function (match, p1, p2, offset) {
-            let number = convertUnit(
-                match,
-                unit.conversionRatio,
-                unit.convertTo
-            );
-            let newNode = node.splitText(offset + deltaOffset);
-            deltaOffset -= node.nodeValue.length + match.length;
-            newNode.nodeValue = newNode.nodeValue.substr(match.length);
-            node.parentNode.insertBefore(
-                createSpanElement(match, number),
-                newNode
-            );
-            node = newNode;
-        });
+    node.nodeValue.replace(regex, function (match, p1, p2, offset) {
+        const internationalUnit = convertUnit(match);
+        let newNode = node.splitText(offset + deltaOffset);
+        deltaOffset -= node.nodeValue.length + match.length;
+        newNode.nodeValue = newNode.nodeValue.substr(match.length);
+        node.parentNode.insertBefore(
+            createSpanElement(match, internationalUnit),
+            newNode
+        );
+        node = newNode;
     });
 }
 
-function convertUnit(unitString, conversionRatio, convertTo) {
-    let number;
-    if (regexFraction.test(unitString)) {
-        let fraction = unitString.match(regexFraction)[0].split('/');
+function convertUnit(imperialUnit) {
+    let number, conversionRatio, convertTo;
+    if (regexFraction.test(imperialUnit)) {
+        const fraction = imperialUnit.match(regexFraction)[0].split('/');
         number = fraction[0] / fraction[1];
-    } else if (regexNumber.test(unitString)) {
-        number = parseFloat(unitString.match(regexNumber)[0].replace(',', ''));
+    } else if (regexNumber.test(imperialUnit)) {
+        number = parseFloat(
+            imperialUnit.match(regexNumber)[0].replace(',', '')
+        );
     }
+    imperialUnits.forEach((element) => {
+        if (element.regex.test(imperialUnit)) {
+            conversionRatio = element.conversionRatio;
+            convertTo = element.convertTo;
+        }
+    });
     number *= conversionRatio;
     number = number.toFixed(2);
     return `${number.toString()} ${convertTo}`;
