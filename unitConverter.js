@@ -13,6 +13,12 @@ const imperialUnits = [
         conversionRatio: 1.609344,
         regex: /(miles?|mi)/gi,
     },
+    {
+        convertFrom: 'foot',
+        convertTo: 'm',
+        conversionRatio: 0.3048,
+        regex: /(?:foot|feet|ft)/gi,
+    },
 ];
 
 function findTextNodes(node) {

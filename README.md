@@ -7,7 +7,8 @@ The extension scans the whole page for imperial units. In case of a match the un
 ## Which units are converted?
 
 pound -> kilogram\
-mile -> kilometre
+mile -> kilometer\
+foot -> meter
 
 ## Demo
 
