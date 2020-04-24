@@ -23,7 +23,7 @@ const imperialUnits = [
 
 let regexImperialUnits = imperialUnits[0].regex.source;
 for (let i = 1; i < imperialUnits.length; i++) {
-    regexImperialUnits += `| ${imperialUnits[i].regex.source}`;
+    regexImperialUnits += `|${imperialUnits[i].regex.source}`;
 }
 const regex = new RegExp(
     `(?:${regexNumber.source}|${regexFraction.source})(\\s|-)?(?:${regexImperialUnits})\\b`,
