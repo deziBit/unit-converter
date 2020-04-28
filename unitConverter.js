@@ -8,16 +8,34 @@ const imperialUnits = [
         regex: /(?:(pound|lb)s?)/i,
     },
     {
+        convertFrom: 'ounce',
+        convertTo: 'g',
+        conversionRatio: 28.349523125,
+        regex: /(?:ounces?|oz)/i,
+    },
+    {
         convertFrom: 'mile',
         convertTo: 'km',
         conversionRatio: 1.609344,
         regex: /(?:miles?|mi)/i,
     },
     {
+        convertFrom: 'yard',
+        convertTo: 'm',
+        conversionRatio: 0.9144,
+        regex: /(?:yards?|yd)/i,
+    },
+    {
         convertFrom: 'foot',
         convertTo: 'm',
         conversionRatio: 0.3048,
-        regex: /(?:foot|feet|ft)/i,
+        regex: /(?:foot|feet|ft|')/i,
+    },
+    {
+        convertFrom: 'inch',
+        convertTo: 'cm',
+        conversionRatio: 2.54,
+        regex: /(?:inch|inches|")/i,
     },
 ];
 

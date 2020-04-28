@@ -7,8 +7,11 @@ The extension scans the whole page for imperial units. In case of a match the un
 ## Which units are converted?
 
 pound -> kilogram\
+ounce -> gram\
 mile -> kilometer\
-foot -> meter
+yard -> meter\
+foot -> meter\
+inch -> centimeter
 
 ## Demo
 
