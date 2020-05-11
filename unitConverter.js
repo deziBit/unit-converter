@@ -26,16 +26,22 @@ const imperialUnits = [
         regex: /(?:yards?|yd)/i,
     },
     {
+        convertFrom: 'foot inch',
+        convertTo: 'm',
+        conversionRatio: [0.3048, 0.0254],
+        regex: /(?:foot|feet|ft|'|’)\s?\d+\s?(?:inch|inches|in|"|”)?/i,
+    },
+    {
         convertFrom: 'foot',
         convertTo: 'm',
         conversionRatio: 0.3048,
-        regex: /(?:foot|feet|ft|'\W)/i,
+        regex: /(?:foot|feet|ft|')/i,
     },
     {
         convertFrom: 'inch',
         convertTo: 'cm',
         conversionRatio: 2.54,
-        regex: /(?:inch|inches|"\W)/i,
+        regex: /(?:inch|inches|"|”|’)/i,
     },
 ];
 
@@ -44,7 +50,7 @@ for (let i = 1; i < imperialUnits.length; i++) {
     regexImperialUnits += `|${imperialUnits[i].regex.source}`;
 }
 const regex = new RegExp(
-    `\\b(?:${regexNumber.source}|${regexFraction.source})(\\s|-)?(?:${regexImperialUnits})\\b`,
+    `\\b(?:${regexNumber.source}|${regexFraction.source})(\\s|-)?(?:${regexImperialUnits})(?:\\b|\\W)`,
     'gi'
 );
 
@@ -98,13 +104,19 @@ function convertUnit(imperialUnit) {
             imperialUnit.match(regexNumber)[0].replace(',', '')
         );
     }
-    imperialUnits.forEach((element) => {
+    for (let element of imperialUnits) {
         if (element.regex.test(imperialUnit)) {
             conversionRatio = element.conversionRatio;
             convertTo = element.convertTo;
+            break;
         }
-    });
-    number *= conversionRatio;
+    }
+    if (Array.isArray(conversionRatio)) {
+        number *= conversionRatio[0];
+        number += conversionRatio[1] * imperialUnit.match(/\d+/g)[1];
+    } else {
+        number *= conversionRatio;
+    }
     number = number.toFixed(2);
     return `${number.toString()} ${convertTo}`;
 }
