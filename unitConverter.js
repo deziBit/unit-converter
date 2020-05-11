@@ -29,13 +29,13 @@ const imperialUnits = [
         convertFrom: 'foot',
         convertTo: 'm',
         conversionRatio: 0.3048,
-        regex: /(?:foot|feet|ft|')/i,
+        regex: /(?:foot|feet|ft|'\W)/i,
     },
     {
         convertFrom: 'inch',
         convertTo: 'cm',
         conversionRatio: 2.54,
-        regex: /(?:inch|inches|")/i,
+        regex: /(?:inch|inches|"\W)/i,
     },
 ];
 
@@ -44,7 +44,7 @@ for (let i = 1; i < imperialUnits.length; i++) {
     regexImperialUnits += `|${imperialUnits[i].regex.source}`;
 }
 const regex = new RegExp(
-    `(?:${regexNumber.source}|${regexFraction.source})(\\s|-)?(?:${regexImperialUnits})\\b`,
+    `\\b(?:${regexNumber.source}|${regexFraction.source})(\\s|-)?(?:${regexImperialUnits})\\b`,
     'gi'
 );
 
